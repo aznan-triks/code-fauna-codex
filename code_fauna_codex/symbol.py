@@ -14,3 +14,4 @@ class Symbol:
     signature: str
     docstring: str
     language: str
+    parser: str  # which backend produced this row: "ast" | "treesitter" | "regex"

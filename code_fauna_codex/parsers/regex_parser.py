@@ -51,7 +51,7 @@ def parse_generic_file(path: Path, rel: str) -> list[Symbol]:
                 out.append(Symbol(
                     section=section, name=match.group(1), file=rel, line=lineno,
                     signature=line.strip(), docstring="",
-                    language=_LANGUAGE_BY_EXT[path.suffix],
+                    language=_LANGUAGE_BY_EXT[path.suffix], parser="regex",
                 ))
     return out
 

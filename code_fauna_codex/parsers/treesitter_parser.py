@@ -111,7 +111,7 @@ def _first_type_identifier(node) -> str | None:
 def _symbol(name: str, rel: str, node, language: str, section: str) -> Symbol:
     signature = node.text.decode("utf-8").splitlines()[0].strip()
     return Symbol(section=section, name=name, file=rel, line=node.start_point.row + 1,
-                 signature=signature, docstring="", language=language)
+                 signature=signature, docstring="", language=language, parser="treesitter")
 
 
 def _walk_js(node, rel: str, language: str, out: list[Symbol], class_name: str | None = None) -> None:

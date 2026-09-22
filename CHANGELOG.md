@@ -6,6 +6,17 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 ### Added
+- **Parser provenance per symbol.** `codex.json` schema `1` → `2` (**breaking**: re-run
+  `code-fauna-codex scan`). Every symbol row now carries `parser`: `ast` (Python),
+  `treesitter`, or `regex` — which backend actually produced that row.
+  - Humanized: You can now tell, per symbol, whether it came from a precise parser or
+    a best-effort guess — and trust it accordingly.
+  - Technical: `Symbol` gained a required `parser` field, set by all three producers
+    (`scan.py::parse_python_file`, `parsers/regex_parser.py`,
+    `parsers/treesitter_parser.py`). `CODEX_SCHEMA_VERSION` bumped 1 → 2 in
+    `index_store.py`; every reader already calls `codex_schema_error()` before trusting
+    a codex, so an old-schema file is refused with a `scan` instruction, never
+    half-read.
 - **`code-fauna-codex graph` — export the call/import graph as Mermaid or DOT.**
   - Humanized: You can now turn the "who calls what" data into a picture — paste the
     output straight into a Mermaid live editor or `dot -Tpng`.

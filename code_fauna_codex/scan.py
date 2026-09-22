@@ -90,7 +90,7 @@ def parse_python_file(path: Path, rel: str) -> list[Symbol]:
             out.append(Symbol(
                 section="python_classes", name=node.name, file=rel, line=node.lineno,
                 signature=f"class {node.name}", docstring=ast.get_docstring(node) or "",
-                language="python",
+                language="python", parser="ast",
             ))
             class_stack.append(node.name)
             self.generic_visit(node)
@@ -102,7 +102,7 @@ def parse_python_file(path: Path, rel: str) -> list[Symbol]:
                 section="python_methods" if class_stack else "python_functions",
                 name=qualname, file=rel, line=node.lineno,
                 signature=f"def {qualname}({_fmt_args(node.args)})",
-                docstring=ast.get_docstring(node) or "", language="python",
+                docstring=ast.get_docstring(node) or "", language="python", parser="ast",
             ))
             self.generic_visit(node)
 

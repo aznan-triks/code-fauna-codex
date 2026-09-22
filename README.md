@@ -254,18 +254,20 @@ Python.
 
 ```json
 {
-  "root": "...", "schema_version": 1,
+  "root": "...", "schema_version": 2,
   "files": {"path/to/file.py": "<sha256>"},
-  "symbols": {"python_functions": [{"name": ..., "file": ..., "line": ..., "signature": ..., "docstring": ..., "language": ...}]},
+  "symbols": {"python_functions": [{"name": ..., "file": ..., "line": ..., "signature": ..., "docstring": ..., "language": ..., "parser": "ast"}]},
   "edges": {"language": "python", "imports": {...}, "calls": [...]}
 }
 ```
 
-**What it contains, and does not.** Symbol names, signatures, docstrings, file paths and
-file hashes. It never stores file bodies, string literals, or any *value* from your
-source — which is why code-fauna-codex does not scan for secrets before indexing: a secret in a
-variable's value cannot reach the codex. A secret in a *docstring* or a *function name*
-would, so treat `codex.json` with the same care as the source it describes.
+**What it contains, and does not.** Symbol names, signatures, docstrings, file paths,
+file hashes, and which backend extracted each symbol (`parser`: `ast` | `treesitter` |
+`regex` — a consumer can weigh an AST-derived symbol above a best-effort regex one). It
+never stores file bodies, string literals, or any *value* from your source — which is
+why code-fauna-codex does not scan for secrets before indexing: a secret in a variable's
+value cannot reach the codex. A secret in a *docstring* or a *function name* would, so
+treat `codex.json` with the same care as the source it describes.
 
 **`schema_version` is checked by every reader**, which fails fast rather than
 half-reading a file from another version. Rebuild with `code-fauna-codex scan`.
@@ -329,7 +331,9 @@ method) in a new file under `code_fauna_codex/providers/`, then register it in
 Implement `code_fauna_codex.parsers.base.CodeParser` (`name`, `extensions`, `available`, one
 `parse(path, rel)` method) in a new file under `code_fauna_codex/parsers/`, then register it in
 `code_fauna_codex/parsers/__init__.py::PARSERS`. A backend whose coverage varies per extension
-also implements `supports(extension)`.
+also implements `supports(extension)`. Every `Symbol` it returns must set `parser` to that
+backend's own name (`self.name`) — it is how a consumer tells an AST-derived symbol from a
+best-effort regex one.
 
 ## Performance
 

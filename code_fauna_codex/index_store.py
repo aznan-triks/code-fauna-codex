@@ -12,7 +12,11 @@ from typing import Final
 
 # Bumped only when the on-disk codex layout changes in a way an older/newer reader
 # would misread. Codexes written before this field existed report version 0.
-CODEX_SCHEMA_VERSION: Final = 1
+# 2 (2026-09-22): every symbol row gained a required "parser" field (ast/treesitter/
+# regex provenance) — an older reader would not know to expect it, and a codex from
+# before this bump has no value to put there, so re-scanning is required rather than
+# defaulting it silently.
+CODEX_SCHEMA_VERSION: Final = 2
 
 
 def load_json(path: Path, default: dict) -> dict:

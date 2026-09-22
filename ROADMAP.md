@@ -84,6 +84,7 @@ turn it into a linter, a graph database, a service, or a platform lose.
 |---|---|---|
 | 30 | Mermaid / DOT export | `code-fauna-codex graph` — caller→callee or file→module pairs, as `flowchart LR` or `digraph`. Pure formatting of the existing `edges` block. |
 | 31 | Human-readable Markdown summary per module | `code-fauna-codex summary` — every symbol's signature and first docstring line, grouped by file. Complements `--json` rather than competing with it. |
+| 32 | Parser provenance per symbol (`ast` / `treesitter` / `regex`) | Every `Symbol` now carries `parser`, naming the backend that produced it — a consumer can weigh a regex-derived row below an AST-derived one. Done as one deliberate schema bump (`codex_schema_version` 1 → 2), not folded into an unrelated release. |
 
 ### Suggestions answered by an existing feature
 
@@ -103,9 +104,7 @@ Recorded so they are not rebuilt as a second way to do the same thing.
 
 ## Planned
 
-| Item | Why it is not in this release |
-|---|---|
-| Parser provenance per symbol (`ast` / `treesitter` / `regex`) | A consumer could then weigh a regex-derived symbol lower than an AST-derived one. Cheap, but it changes the `Symbol` record shape, which is better done in one deliberate schema bump. |
+Nothing queued right now — see Backlog in `NEXT_SESSION.md` and Deferred below.
 
 ---
 
