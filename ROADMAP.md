@@ -78,6 +78,13 @@ turn it into a linter, a graph database, a service, or a platform lose.
 | 28 | Team-cache doctrine | Documented: `codex.json` is generated, gitignored by default, and why committing it is usually the wrong call. |
 | 29 | Proxy support | Already worked (`requests` honours `HTTP_PROXY`/`HTTPS_PROXY`); now documented rather than reinvented. |
 
+### Documentation and graph export
+
+| # | Item | Note |
+|---|---|---|
+| 30 | Mermaid / DOT export | `code-fauna-codex graph` — caller→callee or file→module pairs, as `flowchart LR` or `digraph`. Pure formatting of the existing `edges` block. |
+| 31 | Human-readable Markdown summary per module | `code-fauna-codex summary` — every symbol's signature and first docstring line, grouped by file. Complements `--json` rather than competing with it. |
+
 ### Suggestions answered by an existing feature
 
 Recorded so they are not rebuilt as a second way to do the same thing.
@@ -98,9 +105,7 @@ Recorded so they are not rebuilt as a second way to do the same thing.
 
 | Item | Why it is not in this release |
 |---|---|
-| Mermaid / DOT export | Only became meaningful now that edges exist. Small, next pass. |
 | Parser provenance per symbol (`ast` / `treesitter` / `regex`) | A consumer could then weigh a regex-derived symbol lower than an AST-derived one. Cheap, but it changes the `Symbol` record shape, which is better done in one deliberate schema bump. |
-| Human-readable Markdown summary per module | Useful as a "read this before coding" artifact; competes with `--json` for effort, so it waits until someone reads it. |
 
 ---
 

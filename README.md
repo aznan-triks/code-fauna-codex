@@ -56,7 +56,7 @@ is never set up.
 
 | Cost | Commands |
 |---|---|
-| **Free** — no network, no API key, no quota | `scan` `find` `section` `deps` `unused` `similar` `status` `diff` `doctor` |
+| **Free** — no network, no API key, no quota | `scan` `find` `section` `deps` `unused` `similar` `status` `diff` `doctor` `graph` `summary` |
 | **One embedding API call** | `embed` (one per batch of `--batch-size`, default 50) · `search` (one per query) |
 
 `similar` is free at query time but reads an index `embed` had to build first. The
@@ -71,6 +71,8 @@ is never set up.
     code-fauna-codex unused                         # symbols never named at a call site — a HINT, not a verdict
     code-fauna-codex diff old.json codex.json       # what changed between two snapshots
     code-fauna-codex doctor                         # environment diagnostic: why isn't this working?
+    code-fauna-codex graph --format mermaid         # call/import edges as Mermaid or DOT text
+    code-fauna-codex summary                        # human-readable Markdown digest, grouped by file
 
 ### Call and import edges
 
@@ -94,6 +96,22 @@ makes a match possible without full name resolution. Calls with no static name
 not a verdict**: dynamic dispatch, decorators, entry points and `getattr` all make a
 live symbol look unreferenced. Dunders, `main` and `test_*` are excluded already.
 Verify before deleting anything.
+
+### Graph export — `graph`
+
+`code-fauna-codex graph` renders the `edges` block as Mermaid (`flowchart LR`, the
+default) or DOT (`--format dot`) text — paste it straight into a Mermaid live editor
+or `dot -Tpng`. `--kind calls` (default) exports caller→callee pairs; `--kind imports`
+exports file→module pairs. `--out <path>` writes to a file instead of stdout. Pure
+formatting of data `scan` already computed — no new relations are discovered.
+
+### Markdown summary — `summary`
+
+`code-fauna-codex summary` writes a "read this before coding" Markdown digest: every
+symbol's signature and first docstring line, grouped by file. `--file <path>` restricts
+it to one file (module); omitted, it covers every file with at least one symbol.
+`--out <path>` writes to a file instead of stdout. This is the human-readable
+counterpart to `--json` — it does not replace it.
 
 ### Excluding files — `.codefaunacodexignore`
 
@@ -188,6 +206,8 @@ verdict.
 | `unused` | `count` `symbols[{section,name,file,line}]` `caveat` |
 | `diff` | `old` `new` `summary{files_added,files_removed,files_changed,symbols_added,symbols_removed,symbols_moved,symbols_signature_changed}` `files{}` `symbols{}` |
 | `doctor` | `runtime` `parsers` `providers[]` `files` |
+| `graph` | `codex` `kind` `format` `out` `edge_count` `content` |
+| `summary` | `codex` `file` `out` `content` |
 | `embed` | `codex` `index` `provider` `model` `dim` `entries_total` `entries_indexed` `pruned` `migrated` |
 | `search` | `question` `count` `threshold_applied` `results[{score,section,name,file,line,signature,docstring}]` |
 | `similar` | `count` `entries` `pairs_considered` `same_file_pairs` `excluded_same_file` `pairs[{score,a,b}]` |

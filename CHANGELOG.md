@@ -5,6 +5,20 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+- **`code-fauna-codex graph` — export the call/import graph as Mermaid or DOT.**
+  - Humanized: You can now turn the "who calls what" data into a picture — paste the
+    output straight into a Mermaid live editor or `dot -Tpng`.
+  - Technical: New `graph_export.py` (pure `calls_edges`/`import_edges` +
+    `to_mermaid`/`to_dot`). CLI: `code-fauna-codex graph [--codex] [--kind calls|imports]
+    [--format mermaid|dot] [--out path]`. Offline; `edges` remains Python-only, so is this.
+- **`code-fauna-codex summary` — human-readable Markdown digest, grouped by file.**
+  - Humanized: A "read this before coding" page listing every function and class per
+    file, with its signature and a one-line description — for humans, not `jq`.
+  - Technical: New `summary.py` (pure `module_summary`/`codex_summary`). CLI:
+    `code-fauna-codex summary [--codex] [--file path] [--out path]`. Offline; does not
+    replace `--json`, which already serves the machine-readable case.
+
 ### Changed
 - **Project renamed again: `fauna-codex` → `code-fauna-codex`.** Package `fauna_codex` →
   `code_fauna_codex`, CLI entry point `fauna-codex` → `code-fauna-codex`, ignore file

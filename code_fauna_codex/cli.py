@@ -10,8 +10,10 @@ from code_fauna_codex import emit
 from code_fauna_codex.diff import cmd_diff as _cmd_diff
 from code_fauna_codex.doctor import cmd_doctor as _cmd_doctor
 from code_fauna_codex.edges import callees_of, callers_of, unreferenced_symbols
+from code_fauna_codex.graph_export import EDGE_KINDS, EXPORTERS
 from code_fauna_codex.index_store import codex_schema_error, load_json, save_json
 from code_fauna_codex.scan import build_codex
+from code_fauna_codex.summary import codex_summary, module_summary
 from code_fauna_codex.semantic import (
     DEFAULT_BATCH_SIZE, DEFAULT_MIN_ZSCORE, DEFAULT_SIMILAR_MIN_ZSCORE, DEFAULT_TIMEOUT_S,
     DEFAULT_TOP_K, cmd_embed as _cmd_embed, cmd_search as _cmd_search,
@@ -34,7 +36,7 @@ exit codes:
 
 network cost:
   free, offline, no API key:  scan  find  section  deps  unused  similar  status
-                              diff  doctor
+                              diff  doctor  graph  summary
   one embedding API call:     embed (one per batch of --batch-size)  search (one)
 
 examples:
@@ -202,6 +204,54 @@ def cmd_unused(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def cmd_graph(args: argparse.Namespace) -> int:
+    """Export call/import edges as Mermaid or DOT — offline, Python edges only
+    (the `edges` block itself is Python-only; see `edges.py`)."""
+    codex = _load_codex(Path(args.codex), "graph", args.json)
+    if codex is None:
+        return EXIT_NEEDS_USER
+
+    pairs = EDGE_KINDS[args.kind](codex)
+    content = EXPORTERS[args.format](pairs)
+    if args.out:
+        Path(args.out).write_text(content, encoding="utf-8")
+
+    if args.json:
+        emit.json_ok("graph", codex=args.codex, kind=args.kind, format=args.format,
+                     out=args.out, edge_count=len(pairs), content=content)
+        return EXIT_OK
+
+    if args.out:
+        print(f"Wrote {len(pairs)} edge(s) -> {args.out}")
+    else:
+        print(content, end="")
+    return EXIT_OK
+
+
+def cmd_summary(args: argparse.Namespace) -> int:
+    """Human-readable Markdown digest of the codex — offline. `--json` already serves
+    the machine-readable case; this command exists for the human one."""
+    codex = _load_codex(Path(args.codex), "summary", args.json)
+    if codex is None:
+        return EXIT_NEEDS_USER
+
+    content = module_summary(codex, args.file) if args.file else codex_summary(codex)
+    if args.out:
+        Path(args.out).write_text(content, encoding="utf-8")
+
+    if args.json:
+        emit.json_ok("summary", codex=args.codex, file=args.file, out=args.out, content=content)
+        return EXIT_OK
+
+    if args.out:
+        print(f"Wrote summary -> {args.out}")
+    elif content:
+        print(content, end="")
+    else:
+        print(f"No symbols found for file: {args.file}")
+    return EXIT_OK
+
+
 def cmd_diff(args: argparse.Namespace) -> int:
     return _cmd_diff(Path(args.old), Path(args.new), args.json)
 
@@ -289,6 +339,26 @@ def build_parser() -> argparse.ArgumentParser:
     ))
     p_unused.add_argument("--codex", default="codex.json")
     p_unused.set_defaults(func=cmd_unused)
+
+    p_graph = sub.add_parser("graph", parents=[common], help=(
+        "Export call/import edges as Mermaid or DOT — offline (Python edges only)."
+    ))
+    p_graph.add_argument("--codex", default="codex.json")
+    p_graph.add_argument("--kind", default="calls", choices=["calls", "imports"], help=(
+        "calls: caller->callee, symbol qualnames. imports: file->imported module."
+    ))
+    p_graph.add_argument("--format", default="mermaid", choices=["mermaid", "dot"])
+    p_graph.add_argument("--out", default=None, help="Write to this path instead of stdout.")
+    p_graph.set_defaults(func=cmd_graph)
+
+    p_summary = sub.add_parser("summary", parents=[common], help=(
+        "Human-readable Markdown digest of the codex, grouped by file — offline."
+    ))
+    p_summary.add_argument("--codex", default="codex.json")
+    p_summary.add_argument("--file", default=None,
+                           help="Restrict to one file (module); default is every file.")
+    p_summary.add_argument("--out", default=None, help="Write to this path instead of stdout.")
+    p_summary.set_defaults(func=cmd_summary)
 
     p_diff = sub.add_parser("diff", parents=[common], help=(
         "Compare two codex snapshots: added/removed/moved/re-signatured symbols. Offline."

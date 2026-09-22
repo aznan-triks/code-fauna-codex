@@ -19,7 +19,7 @@ away under a different name.
 
 | Cost | Commands |
 |---|---|
-| **Free.** No network, no API key, no quota. Call these as often as useful. | `scan` `find` `section` `deps` `unused` `similar` `status` `diff` `doctor` |
+| **Free.** No network, no API key, no quota. Call these as often as useful. | `scan` `find` `section` `deps` `unused` `similar` `status` `diff` `doctor` `graph` `summary` |
 | **One embedding API call.** Needs a key. Ask before spending quota if you are not sure. | `embed` (one call per batch of 50) · `search` (one call per query) |
 
 `similar` is free *at query time* but reads an index that `embed` had to build first.
